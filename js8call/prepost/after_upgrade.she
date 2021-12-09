@@ -1,0 +1,4 @@
+#/usr/bin/env bash
+# Run AFTER installing package
+exit 0
+

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=QSSTV
+Encoding=UTF-8
+GenericName=QSSTV
+Comment=Slow Scan TV
+Exec=sh -c "PULSE_SINK=fepi-playback PULSE_SOURCE=fepi-capture /usr/local/bin/qsstv"
+Icon=/usr/share/pixmaps/CQ.png
+Terminal=false
+Type=Application
+Categories=HamRadio;
+

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Runs BEFORE removing package
+exit 0

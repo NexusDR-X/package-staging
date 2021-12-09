@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Runs BEFORE package installs
+exit 0

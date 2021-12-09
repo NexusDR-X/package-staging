@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=RMS Gateway Manager
+GenericName=RMS Gateway Manager
+Comment=RMS Gateway Manager
+Exec=bash -c /usr/local/bin/rmsgw_manager.sh
+Icon=/usr/share/raspberrypi-artwork/raspitr.png
+Terminal=false
+Type=Application
+Categories=HamRadio;
+Comment[en_US]=RMS Gateway Manager
+
