@@ -7,7 +7,8 @@
 #      for F in ${D}/fl*.desktop
 #      do
 
-FLDIGI_DESKTOPS="/usr/local/share/applications $HOME/.local/share/applications"
+#FLDIGI_DESKTOPS="/usr/local/share/applications $HOME/.local/share/applications"
+FLDIGI_DESKTOPS="/usr/local/share/applications"
 for D in ${FLDIGI_DESKTOPS}
 do
    for F in ${D}/flrig*.desktop

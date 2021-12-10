@@ -2,10 +2,11 @@
 # Runs AFTER installing package
 
 # Fix the *.desktop files
-FLDIGI_DESKTOPS="/usr/local/share/applications $HOME/.local/share/applications"
+#FLDIGI_DESKTOPS="/usr/local/share/applications $HOME/.local/share/applications"
+FLDIGI_DESKTOPS="/usr/local/share/applications"
 for D in ${FLDIGI_DESKTOPS}
 do
-   for F in ${D}/flmsg*.desktop
+   for F in ${D}/fldigi*.desktop
    do
       [ -e "$F" ] || continue
       sed -i 's/Network;//g' $F

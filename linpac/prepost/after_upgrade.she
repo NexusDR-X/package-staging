@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-# Runs AFTER installing package
-sudo ldconfig
-exit 0

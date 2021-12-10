@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-# Runs AFTER installing package
-exit 0

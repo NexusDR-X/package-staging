@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-# Run BEFORE installing package
-exit 0
