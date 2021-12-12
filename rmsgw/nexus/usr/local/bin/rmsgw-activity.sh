@@ -5,13 +5,15 @@
 # Suggested cron config to run this script:
 # 1 0 * * *   /home/pi/rmsgw-activity.sh 2>&1 >/dev/null
 
+# Separate MAILTO addresses with spaces.
 
-VERSION="1.1.7"
+VERSION="1.1.8"
 
 declare -i AGE=24 # Age in hours
 FILES="/var/log/rms* /var/log/syslog*"
 MAILTO="${1:-w7ecg.wecg@gmail.com}"
-PAT_DIR="${2:-$HOME/.wl2k}"
+#PAT_DIR="${2:-$HOME/.wl2k}"
+PAT_DIR="${2:-$HOME/.config/pat}"
 # Mail RMS gateway login activity for last 24 hours.
 FILTERED="$(mktemp)"
 OUTFILE="$(mktemp)"
@@ -45,7 +47,9 @@ fi
 #   echo 
 #   cat $OUTFILE | sort | uniq
 #} | /usr/sbin/ssmtp $MAILTO
-cat $OUTFILE | sort | uniq | $(command -v patmail.sh) -d $PAT_DIR $MAILTO "$HOSTNAME RMS Gateway activity for 24 hours preceding `date`" telnet
+#cat $OUTFILE | sort | uniq | $(command -v patmail.sh) -d $PAT_DIR $MAILTO "$HOSTNAME RMS Gateway activity for 24 hours preceding `date`" telnet
+cat $OUTFILE | sort | uniq | $(command -v pat) compose --subject "$HOSTNAME RMSGW activity 24 hours preceding `date`" $(echo $MAILTO | xargs -d,) &>/dev/null
+$(command -v pat) --event-log /dev/null --send-only connect telnet &>/dev/null
 rm $OUTFILE
 rm $FILTERED
 
