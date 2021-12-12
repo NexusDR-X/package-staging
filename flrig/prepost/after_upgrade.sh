@@ -15,9 +15,9 @@ do
    do
       [ -e "$F" ] || continue
       sudo sed -i 's/Network;//g' $F
-      if [ $F -eq "${FLDIGI_DESKTOPS}/flrig.desktop" ]
+      if [ $F = "${D}/flrig.desktop" ]
       then
-         grep -q "\-\-debug-level 0" ${FLDIGI_DESKTOPS}/flrig.desktop 2>/dev/null || sudo sed -i 's/Exec=flrig/Exec=flrig --debug-level 0/' $F
+         grep -q "\-\-debug-level 0" $F 2>/dev/null || sudo sed -i 's/Exec=flrig/Exec=flrig --debug-level 0/' $F
       fi
    done
 done
