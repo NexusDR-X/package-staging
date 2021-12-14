@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Alias for old gpio binary for use with 
+# fldigi GPIO PTT under RaspiOS Bullseye.
+# gpio was from the wiringpi package, which
+# is not available in RaspiOS Bullseye.
+#
+# User running this script must be root
+# or a member of the gpio group.
+#
+# Requires 2 arguments:
+# $1 : export|unexport
+# $2 : BCM GPIO number
+
+case $2 in
+   17|18|27|22|23|24|25|4|5|6|13|19|26|12|16|20|21)
+      case $1 in
+         export)
+            echo $2 >/sys/class/gpio/export
+	    sleep 0.1
+            echo "out" >/sys/class/gpio/gpio${2}/direction
+            ;;
+         unexport)
+            echo $2 >/sys/class/gpio/unexport
+            ;;
+         *)
+            exit 1
+            ;;
+      esac
+      ;;
+   *)
+      exit 1
+      ;;
+esac
+exit 0
+
