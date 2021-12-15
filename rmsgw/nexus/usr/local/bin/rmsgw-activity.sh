@@ -48,8 +48,8 @@ fi
 #   cat $OUTFILE | sort | uniq
 #} | /usr/sbin/ssmtp $MAILTO
 #cat $OUTFILE | sort | uniq | $(command -v patmail.sh) -d $PAT_DIR $MAILTO "$HOSTNAME RMS Gateway activity for 24 hours preceding `date`" telnet
-cat $OUTFILE | sort | uniq | $(command -v pat) compose --subject "$HOSTNAME RMSGW activity 24 hours preceding `date`" $(echo $MAILTO | xargs -d,) &>/dev/null
-$(command -v pat) --event-log /dev/null --send-only connect telnet &>/dev/null
+cat $OUTFILE | sort | uniq | $(command -v pat) --config $PAT_DIR/config.json --event-log /dev/null compose --subject "$HOSTNAME RMSGW activity 24 hours preceding `date`" $(echo $MAILTO | xargs -d,) &>/dev/null
+$(command -v pat) --config $PAT_DIR/config.json --event-log /dev/null --send-only connect telnet &>/dev/null
 rm $OUTFILE
 rm $FILTERED
 

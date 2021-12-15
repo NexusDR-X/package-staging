@@ -279,9 +279,10 @@ function UpdateReporting () {
 				fi
             # Run rmsgw-activity.sh
 				WHEN="1 0 * * *"
-				WHAT="$SCRIPT $EMAILs $PAT_DIR >/dev/null 2>&1"
+				#WHAT="$SCRIPT $EMAILs $PAT_DIR >/dev/null 2>&1"
+				WHAT="$SCRIPT $EMAILs >/dev/null 2>&1"
 				JOB="$WHEN PATH=\$PATH:/usr/local/bin; $WHAT"
-				cat <(fgrep -i -v "$SCRIPT" <(sudo crontab -u $WHO -l)) <(echo "$JOB") | sudo crontab -u $WHO -
+				cat <(grep -i -v "$SCRIPT" <(sudo crontab -u $WHO -l)) <(echo "$JOB") | sudo crontab -u $WHO -
             # Send mail via telnet
 				#WHEN="3 * * * *"
 				#WHAT="$PAT >/dev/null 2>&1"
@@ -292,7 +293,7 @@ function UpdateReporting () {
 				WHEN="7 0 * * *"
 				WHAT="$CLEAN"
 				JOB="$WHEN $WHAT"
-				cat <(fgrep -i -v "$WHAT" <(sudo crontab -u $WHO -l)) <(echo "$JOB") | sudo crontab -u $WHO -
+				cat <(grep -i -v "find.*${F[_CALL_]}" <(sudo crontab -u $WHO -l)) <(echo "$JOB") | sudo crontab -u $WHO -
 				echo "Done." >$PIPEDATA
 				echo "Reporting setup complete." >$PIPEDATA
 		else

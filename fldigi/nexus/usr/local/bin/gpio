@@ -16,7 +16,7 @@ case $2 in
       case $1 in
          export)
             echo $2 >/sys/class/gpio/export
-	    sleep 0.1
+	    		sleep 0.1
             echo "out" >/sys/class/gpio/gpio${2}/direction
             ;;
          unexport)
