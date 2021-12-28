@@ -25,4 +25,14 @@ then
    sed -e "s/_RIGHT_RADIO_/Right Radio/g" \
    /usr/share/applications/fldigi-right.template >/usr/share/applications/fldigi-right.desktop
 fi
+if [ ! -s /usr/share/applications/flarq-left.desktop ]
+then
+   sed -e "s/_LEFT_RADIO_/Left Radio/g" \
+   /usr/share/applications/flarq-left.template >/usr/share/applications/flarq-left.desktop
+fi
+if [ ! -s /usr/share/applications/flarq-right.desktop ]
+then
+   sed -e "s/_RIGHT_RADIO_/Right Radio/g" \
+   /usr/share/applications/flarq-right.template >/usr/share/applications/flarq-right.desktop
+fi
 exit 0
