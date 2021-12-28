@@ -19,7 +19,7 @@
 #%
 #================================================================
 #- IMPLEMENTATION
-#-    version         ${SCRIPT_NAME} 1.0.10
+#-    version         ${SCRIPT_NAME} 1.0.11
 #-    author          Steve Magnuson, AG7GN
 #-    license         CC-BY-SA Creative Commons License
 #-    script_id       0
@@ -606,7 +606,7 @@ EOF
 					INTERVAL="$(echo "$N1 $N2" | xargs -n1 | sort -g | xargs | tr ' ' ',')"
 					WHO="rmsgw"
 					WHEN="$INTERVAL * * * *"
-					WHAT="/usr/local/bin/rmsgw_aci >/dev/null 2>&1"
+					WHAT="/usr/bin/rmsgw_aci >/dev/null 2>&1"
 					JOB="$WHEN PATH=\$PATH:/usr/local/bin; $WHAT"
 					cat <(fgrep -i -v "$WHAT" <(sudo crontab -u $WHO -l)) <(echo "$JOB") | sudo crontab -u $WHO -
 					echo "Done." >$PIPEDATA
