@@ -12,4 +12,13 @@ do
    done
 done
 [ -f /usr/share/applications/flamp.desktop ] && sudo mv -f /usr/share/applications/flamp.desktop /usr/share/applications/flamp.desktop.disabled
+for SIDE in left right
+do
+   if [ ! -f /usr/share/applications/flamp-${SIDE}.desktop ]
+   then
+      sed -e "s/_${SIDE^^}_RADIO_/${SIDE^} Radio/g" \
+      /usr/share/applications/flamp-${SIDE}.template | \
+      sudo tee /usr/share/applications/flamp-${SIDE}.desktop >/dev/null
+   fi
+done
 exit 0
