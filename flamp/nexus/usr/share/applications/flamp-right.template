@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=flamp (_RIGHT_RADIO_)
+GenericName=Amateur Multicast Protocol Client/Server
+Comment=Amateur Radio Communications
+Exec=flamp -ti "Flamp (_RIGHT_RADIO_)" --config-dir /home/pi/.nbems-right --xmlrpc-server-port 7363
+Icon=flamp
+Terminal=false
+Type=Application
+Categories=HamRadio;
