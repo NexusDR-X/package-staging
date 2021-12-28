@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# Runs BEFORE removing ax25mail-utils package
+# Runs BEFORE removing package
 exit 0

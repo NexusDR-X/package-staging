@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# Runs BEFORE installing ax25mail-utils package
+# Runs BEFORE installing package
 exit 0
