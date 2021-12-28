@@ -2,7 +2,7 @@
 Name=RMS Gateway Manager
 GenericName=RMS Gateway Manager
 Comment=RMS Gateway Manager
-Exec=bash -c /usr/local/bin/rmsgw_manager.sh
+Exec=bash -c /usr/bin/rmsgw_manager.sh
 Icon=/usr/share/raspberrypi-artwork/raspitr.png
 Terminal=false
 Type=Application
