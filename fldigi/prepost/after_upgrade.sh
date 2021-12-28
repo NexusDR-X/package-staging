@@ -15,13 +15,14 @@ done
 # for left and right radios
 [ -f /usr/share/applications/fldigi.desktop ] && sudo mv -f /usr/share/applications/fldigi.desktop /usr/share/applications/fldigi.desktop.disabled
 [ -f /usr/share/applications/flarq.desktop ] && sudo mv -f /usr/share/applications/flarq.desktop /usr/share/applications/flarq.desktop.disabled
-for SIDE in left right
-do
-   if [ ! -f /usr/share/applications/fldigi-${SIDE}.desktop ]
-   then
-      sed -e "s/_${SIDE^^}_RADIO_/${SIDE^} Radio/g" \
-      /usr/share/applications/fldigi-${SIDE}.template | \
-      sudo tee /usr/share/applications/fldigi-${SIDE}.desktop >/dev/null
-   fi
-done
+if [ ! -s /usr/share/applications/fldigi-left.desktop ]
+then
+   sed -e "s/_LEFT_RADIO_/Left Radio/g" \
+   /usr/share/applications/fldigi-left.template >/usr/share/applications/fldigi-left.desktop
+fi
+if [ ! -s /usr/share/applications/fldigi-right.desktop ]
+then
+   sed -e "s/_RIGHT_RADIO_/Right Radio/g" \
+   /usr/share/applications/fldigi-right.template >/usr/share/applications/fldigi-right.desktop
+fi
 exit 0

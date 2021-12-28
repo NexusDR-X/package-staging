@@ -22,13 +22,14 @@ do
    done
 done
 [ -f /usr/share/applications/flrig.desktop ] && sudo mv -f /usr/share/applications/flrig.desktop /usr/share/applications/flrig.desktop.disabled
-for SIDE in left right
-do
-   if [ ! -f /usr/share/applications/flrig-${SIDE}.desktop ]
-   then
-      sed -e "s/_${SIDE^^}_RADIO_/${SIDE^} Radio/g" \
-      /usr/share/applications/flrig-${SIDE}.template | \
-      sudo tee /usr/share/applications/flrig-${SIDE}.desktop >/dev/null
-   fi
-done
+if [ ! -s /usr/share/applications/flrig-left.desktop ]
+then
+   sed -e "s/_LEFT_RADIO_/Left Radio/g" \
+   /usr/share/applications/flrig-left.template >/usr/share/applications/flrig-left.desktop
+fi
+if [ ! -s /usr/share/applications/flrig-right.desktop ]
+then
+   sed -e "s/_RIGHT_RADIO_/Right Radio/g" \
+   /usr/share/applications/flrig-right.template >/usr/share/applications/flrig-right.desktop
+fi
 exit 0
