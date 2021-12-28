@@ -19,7 +19,7 @@
 #%
 #================================================================
 #- IMPLEMENTATION
-#-    version         ${SCRIPT_NAME} 1.0.11
+#-    version         ${SCRIPT_NAME} 1.0.12
 #-    author          Steve Magnuson, AG7GN
 #-    license         CC-BY-SA Creative Commons License
 #-    script_id       0
@@ -650,6 +650,7 @@ VERSION="$(ScriptInfo version | grep version | tr -s ' ' | cut -d' ' -f 4)"
 APP_NAME="RMS Gateway Manager"
 TITLE="$APP_NAME $VERSION"
 #RMSGW_CONFIG_FILE="$HOME/rmsgw.conf"
+mkdir -p "$HOME/.config/nexus"
 RMSGW_CONFIG_FILE="$HOME/.config/nexus/rmsgw.conf"
 [[ -f "$HOME/rmsgw.conf" ]] && mv "$HOME/rmsgw.conf" "$RMSGW_CONFIG_FILE" 
 LOGFILES="/var/log/rms.debug /var/log/ax25-listen.log /var/log/packet.log"
