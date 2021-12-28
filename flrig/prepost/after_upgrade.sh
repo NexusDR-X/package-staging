@@ -8,7 +8,7 @@
 #      do
 
 #FLDIGI_DESKTOPS="/usr/local/share/applications $HOME/.local/share/applications"
-FLDIGI_DESKTOPS="/usr/local/share/applications"
+FLDIGI_DESKTOPS="/usr/share/applications"
 for D in ${FLDIGI_DESKTOPS}
 do
    for F in ${D}/flrig*.desktop
@@ -21,5 +21,5 @@ do
       fi
    done
 done
-[ -f /usr/local/share/applications/flrig.desktop ] && sudo mv -f /usr/local/share/applications/flrig.desktop /usr/local/share/applications/flrig.desktop.disabled
+[ -f /usr/share/applications/flrig.desktop ] && sudo mv -f /usr/share/applications/flrig.desktop /usr/share/applications/flrig.desktop.disabled
 exit 0

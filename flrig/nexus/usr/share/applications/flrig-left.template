@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=Flrig (_RIGHT_RADIO_)
+Name=Flrig (_LEFT_RADIO_)
 GenericName=Amateur Radio Rig Control
 Comment=Amateur Radio Communications
-Exec=sh -c '/usr/local/trim-flrig-log.sh "yesterday";flrig --debug-level 0 --config-dir /home/pi/.flrig-right'
+Exec=sh -c '/usr/bin/trim-flrig-log.sh "yesterday";flrig --debug-level 0 --config-dir /home/pi/.flrig-left'
 Icon=flrig
 Terminal=false
 Type=Application

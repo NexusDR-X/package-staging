@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.5.1"
+VERSION="1.5.2"
 
 #
 # This script removes log files from the $HOME/.flmsg* folder(s) and subfolders.
@@ -19,7 +19,7 @@ VERSION="1.5.1"
 # In the Command field, replace 'flmsg' with the following (change the
 # time period as desired):
 #
-# sh -c '/usr/local/bin/trim-flmsg-log.sh "1 week ago"';flmsg ...
+# sh -c '/usr/bin/trim-flmsg-log.sh "1 week ago"';flmsg ...
 #
 # Leave the "Execute in Terminal" box unchecked, then click OK.
 #

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.5"
+VERSION="1.5.1"
 
 # This script trims the fsq_heard_log.txt file
 # in the ~/.fldigi/temp folder by removing lines with timestamps earlier 
@@ -18,7 +18,7 @@ VERSION="1.5"
 # In the Command field, replace 'fldigi' with the following (change the
 # time period as desired):
 #
-# sh -c '/home/pi/trim-fsq-heard.sh "1 week ago"';fldigi ...
+# sh -c '/usr/bin/trim-fsq-heard.sh "1 week ago"';fldigi ...
 #
 # Leave the "Execute in Terminal" box unchecked, then click OK.
 #
@@ -26,7 +26,7 @@ VERSION="1.5"
 # same way, use this line in the Command field instead (change the time period as
 # desired):
 #
-# sh -c '/usr/local/bin/trim-fsq-audit.sh "30 days ago";/usr/local/bin/trim-fsq-heard.sh "1 week ago"';fldigi
+# sh -c '/usr/bin/trim-fsq-audit.sh "30 days ago";/usr/bin/trim-fsq-heard.sh "1 week ago"';fldigi
 #
 
 # Exit if Fldigi is already running

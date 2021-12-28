@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.5"
+VERSION="1.5.1"
 
 # This script trims the fsq_audit_log.txt file
 # in the ~/.fldigi/temp folder by removing content added aded earlier 
@@ -18,7 +18,7 @@ VERSION="1.5"
 # In the Command field, replace 'fldigi' with the following (change the
 # time period as desired):
 #
-# sh -c '/usr/local/bin/trim-fsq-audit.sh "30 days ago"';fldigi ...
+# sh -c '/usr/bin/trim-fsq-audit.sh "30 days ago"';fldigi ...
 #
 # Leave the "Execute in terminal" box unchecked, then click OK.
 #
@@ -26,7 +26,7 @@ VERSION="1.5"
 # same way, use this line in the Command field instead (change the time period
 # as desired):
 #
-# sh -c '/usr/local/bin/trim-fsq-audit.sh "30 days ago";/usr/local/bin/trim-fsq-heard.sh "1 hour ago"';fldigi
+# sh -c '/usr/bin/trim-fsq-audit.sh "30 days ago";/usr/bin/trim-fsq-heard.sh "1 hour ago"';fldigi
 #
 
 # Exit if Fldigi is already running
