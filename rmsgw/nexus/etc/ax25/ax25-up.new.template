@@ -55,8 +55,8 @@ KISSPARMS=/usr/sbin/kissparms
 LISTEN=/usr/bin/listen
 IPTABLES=/sbin/iptables
 IP6TABLES=/sbin/iptables
-TNC_GET=/usr/local/bin/pitnc_getparams
-TNC_SET=/usr/local/bin/pitnc_setparams
+TNC_GET=/usr/bin/pitnc_getparams
+TNC_SET=/usr/bin/pitnc_setparams
 
 #Variables for system settings
 #-----------------------------

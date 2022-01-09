@@ -364,7 +364,7 @@ function WriteConfiguration () {
 
 	FNAME="/etc/rmsgw/sysop.xml"
 	sed -e "s|_CALL_|${F[_CALL_]}|g" \
-		-e "s|_PASSWORD_|${F[_PASSWORD_]}|" \ 
+		-e "s|_PASSWORD_|${F[_PASSWORD_]}|" \
 		-e "s|_GRID_|${F[_GRID_]}|" \
 		-e "s|_SYSOP_|${F[_SYSOP_]}|" \
 		-e "s|_ADDR1_|${F[_ADDR1_]}|" \
@@ -373,7 +373,7 @@ function WriteConfiguration () {
 		-e "s|_STATE_|${F[_STATE_]}|" \
 		-e "s|_ZIP_|${F[_ZIP_]}|" \
 		-e "s|_EMAIL_|${F[_EMAIL_]}|" \
-		"${FNAME}.template" > "$TEMPF"
+		"${FNAME}.template" > "$TEMPF" 
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
 	sudo cp -f "$TEMPF" "$FNAME"
 	echo "$FNAME configured." >$PIPEDATA

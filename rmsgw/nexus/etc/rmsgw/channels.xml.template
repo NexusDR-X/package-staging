@@ -19,7 +19,7 @@
 		<groupreference>1</groupreference>
 		<servicecode>_SERVICE_</servicecode>
 		<statuschecker>
-  			/usr/local/bin/rmschanstat.local $type $name $callsign
+  			/usr/bin/rmschanstat.local $type $name $callsign
 		</statuschecker>
 	</channel>
 </rmschannels>
