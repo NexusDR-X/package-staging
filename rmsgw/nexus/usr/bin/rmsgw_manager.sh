@@ -19,7 +19,7 @@
 #%
 #================================================================
 #- IMPLEMENTATION
-#-    version         ${SCRIPT_NAME} 1.0.12
+#-    version         ${SCRIPT_NAME} 1.1.0
 #-    author          Steve Magnuson, AG7GN
 #-    license         CC-BY-SA Creative Commons License
 #-    script_id       0
@@ -328,72 +328,113 @@ function WriteConfiguration () {
 
 	# Update the various RMS gateway configuration files
 	TEMPF=$RMSGW_TEMP_CONFIG
-	cd /usr/local/src/nexus/nexus-rmsgw/
+	#cd /usr/local/src/nexus/nexus-rmsgw/
 
-	FNAME="etc/rmsgw/channels.xml"
-	sed "s|_CALL_|${F[_CALL_]}|g;s|_SSID_|${F[_SSID_]}|;s|_PASSWORD_|${F[_PASSWORD_]}|;s|_GRID_|${F[_GRID_]}|;s|_FREQ_|${F[_FREQ_]}|;s|_MODEM_|${F[_MODEM_]}|;s|_POWER_|${F[_POWER_]}|;s|_HEIGHT_|${F[_HEIGHT_]}|;s|_GAIN_|${F[_GAIN_]}|;s|_DIR_|${F[_DIR_]}|;s|_HOURS_|${F[_HOURS_]}|;s|_SERVICE_|${F[_SERVICE_]}|" "$FNAME" > "$TEMPF" 
+	FNAME="/etc/rmsgw/channels.xml"
+	sed -e "s|_CALL_|${F[_CALL_]}|g" \
+		-e "s|_SSID_|${F[_SSID_]}|" \
+		-e "s|_PASSWORD_|${F[_PASSWORD_]}|" \
+		-e "s|_GRID_|${F[_GRID_]}|" \
+		-e "s|_FREQ_|${F[_FREQ_]}|" \
+		-e "s|_MODEM_|${F[_MODEM_]}|" \
+		-e "s|_POWER_|${F[_POWER_]}|" \
+		-e "s|_HEIGHT_|${F[_HEIGHT_]}|" \
+		-e "s|_GAIN_|${F[_GAIN_]}|" \
+		-e "s|_DIR_|${F[_DIR_]}|" \
+		-e "s|_HOURS_|${F[_HOURS_]}|" \
+		-e "s|_SERVICE_|${F[_SERVICE_]}|" \
+		"${FNAME}.template" > "$TEMPF" 
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
-	sudo cp -f "$TEMPF" "/$FNAME"
-	echo "/$FNAME configured." >$PIPEDATA
+	sudo cp -f "$TEMPF" "$FNAME"
+	echo "$FNAME configured." >$PIPEDATA
 
-	FNAME="etc/rmsgw/banner"
+	FNAME="/etc/rmsgw/banner"
 	echo "${F[_BANNER_]}" > "$TEMPF"
-	sudo cp -f "$TEMPF" "/$FNAME"
-	echo "/$FNAME configured." >$PIPEDATA
+	sudo cp -f "$TEMPF" "$FNAME"
+	echo "$FNAME configured." >$PIPEDATA
 
-	FNAME="etc/rmsgw/gateway.conf"
-	sed "s|_CALL_|${F[_CALL_]}|g;s|_SSID_|${F[_SSID_]}|;s|_GRID_|${F[_GRID_]}|" "$FNAME" > "$TEMPF"
+	FNAME="/etc/rmsgw/gateway.conf"
+	sed -e "s|_CALL_|${F[_CALL_]}|g" \
+		-e "s|_SSID_|${F[_SSID_]}|" \
+		-e "s|_GRID_|${F[_GRID_]}|" \
+		"${FNAME}.template" > "$TEMPF"
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
-	sudo cp -f "$TEMPF" "/$FNAME"
-	echo "/$FNAME configured." >$PIPEDATA
+	sudo cp -f "$TEMPF" "$FNAME"
+	echo "$FNAME configured." >$PIPEDATA
 
-	FNAME="etc/rmsgw/sysop.xml"
-	sed "s|_CALL_|${F[_CALL_]}|g;s|_PASSWORD_|${F[_PASSWORD_]}|;s|_GRID_|${F[_GRID_]}|;s|_SYSOP_|${F[_SYSOP_]}|;s|_ADDR1_|${F[_ADDR1_]}|;s|_ADDR2_|${F[_ADDR2_]}|;s|_CITY_|${F[_CITY_]}|;s|_STATE_|${F[_STATE_]}|;s|_ZIP_|${F[_ZIP_]}|;s|_EMAIL_|${F[_EMAIL_]}|" "$FNAME" > "$TEMPF"
+	FNAME="/etc/rmsgw/sysop.xml"
+	sed -e "s|_CALL_|${F[_CALL_]}|g" \
+		-e "s|_PASSWORD_|${F[_PASSWORD_]}|" \ 
+		-e "s|_GRID_|${F[_GRID_]}|" \
+		-e "s|_SYSOP_|${F[_SYSOP_]}|" \
+		-e "s|_ADDR1_|${F[_ADDR1_]}|" \
+		-e "s|_ADDR2_|${F[_ADDR2_]}|" \
+		-e "s|_CITY_|${F[_CITY_]}|" \
+		-e "s|_STATE_|${F[_STATE_]}|" \
+		-e "s|_ZIP_|${F[_ZIP_]}|" \
+		-e "s|_EMAIL_|${F[_EMAIL_]}|" \
+		"${FNAME}.template" > "$TEMPF"
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
-	sudo cp -f "$TEMPF" "/$FNAME"
-	echo "/$FNAME configured." >$PIPEDATA
+	sudo cp -f "$TEMPF" "$FNAME"
+	echo "$FNAME configured." >$PIPEDATA
 
-	FNAME="etc/ax25/axports"
-	sed -i '/^[[:space:]]*$/d' $FNAME
-	sed "s|_CALL_|${F[_CALL_]}|g;s|_SSID_|${F[_SSID_]}|g;s|_FREQ_|${F[_FREQ_]}|g;s|_MODEM_|${F[_MODEM_]}|g" "$FNAME" > "$TEMPF"
+	FNAME="/etc/ax25/axports"
+	sed -e "s|_CALL_|${F[_CALL_]}|g" \
+		-e "s|_SSID_|${F[_SSID_]}|g" \
+		-e "s|_FREQ_|${F[_FREQ_]}|g" \
+		-e "s|_MODEM_|${F[_MODEM_]}|g" \
+		"${FNAME}.template" > "$TEMPF"
 	[[ $? == 0 ]] || echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA
-	# Check for a client wl2k line and save it if found
-	if [ -f /$FNAME ]
+	# Check for a client wl2k line, save it if found and append it to new axports file
+	if [ -f "$FNAME" ]
 	then
-		SAVE="$(grep "^wl2k[[:space:]]" /$FNAME || [[ $? == 1 ]] 2>&1)"
+		SAVE="$(grep "^wl2k[[:space:]]" "$FNAME" || [[ $? == 1 ]] 2>&1)"
 		[[ $SAVE =~ wl2k ]] && echo -e "\n$SAVE" >> "$TEMPF"
 	fi
-	sudo cp -f "$TEMPF" "/$FNAME"
-	sudo chmod ugo+r "/$FNAME"
-	echo "/$FNAME configured." >$PIPEDATA
+	sudo cp -f "$TEMPF" "$FNAME"
+	# Remove empty lines
+	sudo sed -i '/^[[:space:]]*$/d' "$FNAME"
+	sudo chmod ugo+r "$FNAME"
+	echo "$FNAME configured." >$PIPEDATA
 
-	FNAME="etc/ax25/ax25d.conf"
-	sed "s|_CALL_|${F[_CALL_]}|g;s|_SSID_|${F[_SSID_]}|g" "$FNAME" > "$TEMPF"
+	FNAME="/etc/ax25/ax25d.conf"
+	sed -e "s|_CALL_|${F[_CALL_]}|g" \
+		-e "s|_SSID_|${F[_SSID_]}|g" \
+		"${FNAME}.template" > "$TEMPF"
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
-	sudo cp -f "$TEMPF" "/$FNAME"
-	sudo chmod ugo+r "/$FNAME"
-	echo "/$FNAME configured." >$PIPEDATA
+	sudo cp -f "$TEMPF" "$FNAME"
+	sudo chmod ugo+r "$FNAME"
+	echo "$FNAME configured." >$PIPEDATA
 
-	FNAME="etc/ax25/ax25-up.new"
-	sed "s|_DWUSER_|${F[_DWUSER_]}|;s|_TNC_|${F[_TNC_]}|;s|_MODEM_|${F[_MODEM_]}|" "$FNAME" > "$TEMPF"
+	FNAME="/etc/ax25/ax25-up.new"
+	sed -e "s|_DWUSER_|${F[_DWUSER_]}|" \
+		-e "s|_TNC_|${F[_TNC_]}|" \
+		-e "s|_MODEM_|${F[_MODEM_]}|" \
+		"${FNAME}.template" > "$TEMPF"
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
-	sudo cp -f "$TEMPF" "/$FNAME"
-	sudo chmod +x "/$FNAME"
-	echo "/$FNAME configured." >$PIPEDATA
+	sudo cp -f "$TEMPF" "$FNAME"
+	sudo chmod +x "$FNAME"
+	echo "$FNAME configured." >$PIPEDATA
 
-	FNAME="etc/ax25/ax25-up.new2"
-	sed "s|_BEACON_|${F[_BEACON_]}|" "$FNAME" > "$TEMPF"
+	FNAME="/etc/ax25/ax25-up.new2"
+	sed -e "s|_BEACON_|${F[_BEACON_]}|" "${FNAME}.template" > "$TEMPF"
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
-	sudo cp -f "$TEMPF" "/$FNAME"
-	sudo chmod +x "/$FNAME"
-	echo "/$FNAME configured." >$PIPEDATA
+	sudo cp -f "$TEMPF" "$FNAME"
+	sudo chmod +x "$FNAME"
+	echo "$FNAME configured." >$PIPEDATA
 
-	FNAME="etc/ax25/direwolf.conf"
-	sed "s|_CALL_|${F[_CALL_]}|g;s|_PTT_|${F[_PTT_]}|;s|_MODEM_|${F[_MODEM_]}|;s|_ARATE_|${F[_ARATE_]}|;s|_ADEVICE_CAPTURE_|${F[_ADEVICE_CAPTURE_]}|;s|_ADEVICE_PLAY_|${F[_ADEVICE_PLAY_]}|" "$FNAME" > "$TEMPF"
+	FNAME="/etc/ax25/direwolf.conf"
+	sed -e "s|_CALL_|${F[_CALL_]}|g" \
+		-e "s|_PTT_|${F[_PTT_]}|" \
+		-e "s|_MODEM_|${F[_MODEM_]}|" \
+		-e "s|_ARATE_|${F[_ARATE_]}|" \
+		-e "s|_ADEVICE_CAPTURE_|${F[_ADEVICE_CAPTURE_]}|" \
+		-e "s|_ADEVICE_PLAY_|${F[_ADEVICE_PLAY_]}|" \
+		"${FNAME}.template" > "$TEMPF"
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
-	sudo cp -f "$TEMPF" "/$FNAME"
-	sudo chmod ugo+r "/$FNAME"
-	echo "/$FNAME configured." >$PIPEDATA
+	sudo cp -f "$TEMPF" "$FNAME"
+	sudo chmod ugo+r "$FNAME"
+	echo "$FNAME configured." >$PIPEDATA
 
 	echo "Setting up symlink for /etc/ax25/ax25-up if needed" >$PIPEDATA
 	if ! [ -L /etc/ax25/ax25-up ]
