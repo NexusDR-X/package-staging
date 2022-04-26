@@ -2,7 +2,7 @@
 Name=flamp (_LEFT_RADIO_)
 GenericName=Amateur Multicast Protocol Client/Server
 Comment=Amateur Radio Communications
-Exec=flamp -ti "Flamp (_LEFT_RADIO_)" --config-dir /home/pi/.nbems-left --xmlrpc-server-port 7362
+Exec=flamp -ti "Flamp (_LEFT_RADIO_)" --config-dir $HOME/.nbems-left --xmlrpc-server-port 7362
 Icon=flamp
 Terminal=false
 Type=Application

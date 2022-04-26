@@ -2,7 +2,7 @@
 Name=Flrig (_RIGHT_RADIO_)
 GenericName=Amateur Radio Rig Control
 Comment=Amateur Radio Communications
-Exec=sh -c '/usr/bin/trim-flrig-log.sh "yesterday";flrig --debug-level 0 --config-dir /home/pi/.flrig-right'
+Exec=sh -c '/usr/bin/trim-flrig-log.sh "yesterday";flrig --debug-level 0 --config-dir $HOME/.flrig-right'
 Icon=flrig
 Terminal=false
 Type=Application

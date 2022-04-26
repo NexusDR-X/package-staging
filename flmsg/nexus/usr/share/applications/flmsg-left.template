@@ -2,10 +2,10 @@
 Name=Flmsg (_LEFT_RADIO_)
 GenericName=Amateur Radio Message Generator
 Comment=Amateur Radio Communications
-Exec=sh -c '/usr/bin/trim-flmsg-log.sh "1 month ago";VER="$(flmsg --version | cut -d" " -f2)";flmsg --flmsg-dir /home/pi/.nbems-left --server-port 8080 -ti "Flmsg $VER (_LEFT_RADIO_)"'
+Exec=sh -c '/usr/bin/trim-flmsg-log.sh "1 month ago";VER="$(flmsg --version | cut -d" " -f2)";flmsg --flmsg-dir $HOME/.nbems-left --server-port 8080 -ti "Flmsg $VER (_LEFT_RADIO_)"'
 Icon=flmsg
 Terminal=false
 Type=Application
 Categories=HamRadio;
 Name[en_US]=Flmsg (_LEFT_RADIO_)
-Path=/home/pi
+Path=$HOME
