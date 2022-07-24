@@ -17,7 +17,7 @@ rm -rf /etc/rmsgw
 #	rm -f /etc/rmsgw/${F}
 #done
 # Remove cron jobs
-cat <(fgrep -i -v -e "mailbox.*sent.*mtime" <(crontab -u pi -l)) | crontab -u pi -
-cat <(fgrep -i -v "rmsgw-activity" <(crontab -u pi -l)) | crontab -u pi -
-cat <(fgrep -i -v "rmsgw_aci" <(crontab -u rmsgw -l)) | crontab -u rmsgw -
+bash -c 'cat <(grep -i -v -e "mailbox.*sent.*mtime" <(crontab -u pi -l)) | crontab -u pi -'
+bash -c 'cat <(fgrep -i -v "rmsgw-activity" <(crontab -u pi -l)) | crontab -u pi -'
+bash -c 'cat <(fgrep -i -v "rmsgw_aci" <(crontab -u rmsgw -l)) | crontab -u rmsgw -'
 exit 0
