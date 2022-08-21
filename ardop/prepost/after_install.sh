@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# Runs AFTER installing package
+# Runs AFTER package install
 exit 0

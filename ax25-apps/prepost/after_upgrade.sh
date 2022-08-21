@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# Runs AFTER package installs
+# Runs AFTER package upgrade
 exit 0

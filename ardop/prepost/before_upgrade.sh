@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# Runs BEFORE installing package
+# Runs BEFORE package upgrade
 exit 0
