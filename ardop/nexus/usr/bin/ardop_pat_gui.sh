@@ -7,7 +7,7 @@
 #%
 #% DESCRIPTION
 #%   This script provides a GUI to configure and start/stop
-#%   ARDOP (piardopc) and pat.  It is designed to work on the 
+#%   ARDOP (ardopc) and pat.  It is designed to work on the 
 #%   Nexus DR-X image.
 #%
 #% OPTIONS
@@ -16,7 +16,7 @@
 #%
 #================================================================
 #- IMPLEMENTATION
-#-    version         ${SCRIPT_NAME} 1.1.0
+#-    version         ${SCRIPT_NAME} 1.1.1
 #-    author          Steve Magnuson, AG7GN
 #-    license         CC-BY-SA Creative Commons License
 #-    script_id       0
@@ -100,7 +100,7 @@ function setARDOPpatDefaults () {
    D[3]="GPIO 23" # GPIO PTT (BCM pin)
    D[4]="8515" # ARDOP Port
    D[5]="FALSE" # Enable pat HTTP server
-   D[6]="-l /dev/null/" # Optional piardopc arguments
+   D[6]="-l /dev/null/" # Optional ardopc arguments
 }
 
 function loadSettings () {
@@ -177,12 +177,12 @@ function timeStamp () {
 
 function killARDOP () {
 	# $1 is the ardop PID
-   if pgrep ^piardopc | grep -q $1 2>/dev/null
+   if pgrep -f $ARDOP | grep -q $1 2>/dev/null
 	then
 		kill $1 >/dev/null 2>&1
-		echo -e "\n\npiardopc stopped.  Click \"Save Settings...\" button below to restart." >$PIPEDATA
+		echo -e "\n\nardopc stopped.  Click \"Save Settings...\" button below to restart." >$PIPEDATA
 	else
-		echo -e "\n\npiardopc was already stopped.  Click \"Save Settings...\" button below to restart." >$PIPEDATA
+		echo -e "\n\nardopc was already stopped.  Click \"Save Settings...\" button below to restart." >$PIPEDATA
 	fi
 }
 
@@ -241,7 +241,8 @@ ID="${RANDOM}"
 PAT_CONFIG="$HOME/.config/pat/config.json"
 
 RETURN_CODE=0
-ARDOP="$(command -v piardopc)"
+#ARDOP="$(command -v piardopc)"
+ARDOP="$(command -v ardopc)"
 #PAT="$(command -v pat) --log /dev/stdout -l ax25,telnet http"
 PAT="$(command -v pat) -l ardop,telnet http"
 
@@ -322,7 +323,7 @@ shift $((${OPTIND} - 1)) ## shift options
 pidof -o %PPID -x $(basename "$0") >/dev/null && exit 1
 
 # Check for required apps.
-for A in yad pat jq sponge rigctld piardopc
+for A in yad pat jq sponge rigctld ardopc
 do 
 	command -v $A >/dev/null 2>&1 || Die "$A is required but not installed."
 done
@@ -421,13 +422,13 @@ do
 	else # Not a first run.  pat and ARDOP configured so start 'em
 		# Check what PTT was selected
 		if [[ ${F[_PTT_]} =~ GPIO ]]
-		then # Let piardopc control PTT gia GPIO
+		then # Let ardopc control PTT gia GPIO
 			ARDOP_PTT="-p $(echo "${F[_PTT_]}" | tr ' ' '=')"
 		else # Let pat control PTT via rigctl
 			ARDOP_PTT=""
 		fi
-		# Start piardopc
-		# If no piardopc logging specified as an argument, send logs to /dev/null
+		# Start ardopc
+		# If no ardopc logging specified as an argument, send logs to /dev/null
 		[[ ${F[_ARDOP_ARGS_]} =~ -l ]] || F[_ARDOP_ARGS_]+=" -l /dev/null/"
 		# If PTT is specified as an argument, override PTT setting in GUI
 		[[ ${F[_ARDOP_ARGS_]} =~ -p ]] && ARDOP_PTT=""
@@ -446,7 +447,7 @@ do
 		fi
 	fi 
 
-	ARG_INFO="piardopc arguments are usually not needed, but if you want to use them:\n \
+	ARG_INFO="ardopc arguments are usually not needed, but if you want to use them:\n \
 -l path or --logdir path          Path for log files\n \
 -c device or --cat device         Device to use for CAT Control\n \
 -p device or --ptt device         Device to use for PTT control using RTS\n \
@@ -455,7 +456,7 @@ do
 -L use Left Channel of Soundcard in stereo mode\n \
 -R use Right Channel of Soundcard in stereo mode\n\n \
 "
-	# Set up tab for configuring piardopc.
+	# Set up tab for configuring ardopc.
 	yad --plug="$ID" --tabnum=2 \
   		--text="<b><big><big>ARDOP Configuration</big></big></b>\n\n \
 <b><u><big>Typical Sound Card and PTT Settings for Nexus DR-X</big></u></b>\n \
@@ -475,11 +476,11 @@ Click the <b>Save Settings...</b> button below after you make your changes.\n" \
      	--field="<b>Audio Playback Device</b>":CB "$ADEVICE_PLAYBACKs" \
    	--field="<b>PTT</b>":CB "$PTTs" \
    	--field="<b>ARDOP Port</b>":NUM "${F[_ARDOPPORT_]}!8510..8519!1!" \
-   	--field="<b>piardopc</b> command arguments\n(OPTIONAL - usually not needed)" "${F[_ARDOP_ARGS_]}" \
+   	--field="<b>ardopc</b> command arguments\n(OPTIONAL - usually not needed)" "${F[_ARDOP_ARGS_]}" \
   		--focus-field 1 > $TMPDIR/CONFIGURE_ARDOP.txt &
 	YAD_PIDs+=( $! )
 
-#   	--field="<b>piardopc</b> argument information:":TXT "$ARG_INFO" \
+#   	--field="<b>ardopc</b> argument information:":TXT "$ARG_INFO" \
 
 
 	# Set up tab for pat configuration
