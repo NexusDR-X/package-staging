@@ -1,0 +1,20 @@
+[Unit]
+Description=AX.25 interface
+After=network.target
+
+[Service]
+Type=forking
+TimeoutSec=30
+RemainAfterExit=yes
+Restart=on-watchdog
+NotifyAccess=all
+WatchdogSignal=SIGKILL
+WatchdogSec=4
+ExecStart=/etc/ax25/ax25-up
+ExecStop=/etc/ax25/ax25-down
+ExecStopPost=/etc/ax25/ax25-stop-watchdog.sh
+ExecStartPre=/etc/ax25/ax25-stop-watchdog.sh
+ExecStartPost=/etc/ax25/ax25-watchdog.sh
+
+[Install]
+WantedBy=default.target

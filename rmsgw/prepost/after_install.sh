@@ -25,7 +25,7 @@ fi
 #EOF
 #   cat /tmp/ax25d.conf | sudo tee --append /etc/ax25/ax25d.conf >/dev/null
 #fi
-if grep -q "on-watchdog" /lib/systemd/system/ax25.service
+if grep -q "on-watchdog" /lib/systemd/system/ax25.service 2>/dev/null
 then
 	sudo cp -f /lib/systemd/system/ax25.service.withwatchdog /lib/systemd/system/ax25.service
 else
