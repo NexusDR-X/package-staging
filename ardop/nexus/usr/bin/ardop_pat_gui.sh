@@ -45,7 +45,7 @@ Optnum=$#
 function TrapCleanup() {
    [[ -d "${TMPDIR}" ]] && rm -rf "${TMPDIR}/"
    kill $timeStamp_PID >/dev/null 2>&1
-   kill $ardop_PID >/dev/null 2>&1
+   killARDOP
    kill $pat_PID >/dev/null 2>&1
 	kill $RIG_PID >/dev/null 2>&1
    for P in ${YAD_PIDs[@]}
@@ -58,9 +58,10 @@ function TrapCleanup() {
 }
 
 function SafeExit() {
+	EXIT_CODE=${1:-0}
    trap - INT TERM EXIT SIGINT
 	TrapCleanup
-   exit 0
+   exit $EXIT_CODE
 }
 
 function ScriptInfo() { 
@@ -86,6 +87,15 @@ function Die () {
 	SafeExit
 }
 
+function Sender () {
+	# Data piped to this function is sent to a socat pipe, prepended by the 
+	# app name (optional) and a time stamp
+   declare input=${1:-$(</dev/stdin)}
+   declare APP="${1:-}"
+   [[ -n $APP ]] && APP="${APP} "
+   cat -v | ts "$APP $TIME_FORMAT" | socat - udp-sendto:127.255.255.255:$SOCAT_PORT,broadcast
+}
+
 function loadpatDefaults () {
    for I in $(seq 7 10)
    do # I is the field number.  D[$I] is the default value
@@ -93,19 +103,48 @@ function loadpatDefaults () {
    done
 }
 
-function setARDOPpatDefaults () {
-   declare -gA D
-   D[1]="null" # Audio capture interface (ADEVICE)
-   D[2]="null" # Audio playback interface (ADEVICE)
-   D[3]="GPIO 23" # GPIO PTT (BCM pin)
-   D[4]="8515" # ARDOP Port
-   D[5]="FALSE" # Enable pat HTTP server
-   D[6]="-l /dev/null/" # Optional ardopc arguments
+function setAX25Defaults () {
+	AX25[1]="wl2k"	# Port
+   AX25[2]="200"	# TX Delay
+	AX25[3]="50"	# TX Tail
+   AX25[4]="64"	# Persist
+   AX25[5]="20"	# Slot Time
+   AX25[6]="60"	# Audio Stats
+}
+
+
+function setARDOPDefaults () {
+   declare -gA ARDOP
+   ARDOP[1]="null"		# Audio capture interface (ADEVICE)
+   ARDOP[2]="null"		# Audio playback interface (ADEVICE)
+   ARDOP[3]="GPIO 12"	# GPIO PTT (BCM pin)
+   ARDOP[4]="8515"		# ARDOP Port
+   ARDOP[5]="FALSE"		# Enable pat HTTP server
+   ARDOP[6]="-l /dev/null/" # Optional piardopc arguments
+}
+
+function setDirewolfDefaults () {
+   declare -gA DW
+   DW[1]="N0CALL"  # Call sign
+   DW[2]="1200" # Modem
+   DW[3]="null" # Audio capture interface (ADEVICE)
+   DW[4]="null" # Audio playback interface (ADEVICE)
+   DW[5]="48000" # Audio playback rate (ARATE)
+   DW[6]="GPIO 23" # GPIO PTT (BCM pin)
+   DW[7]="200" # TX Delay
+	DW[8]="50" # TX Tail
+   DW[9]="64"  # Persist
+   DW[10]="20" # Slot Time
+   DW[11]="60" # Audio Stats
+   DW[12]="8001" # AGW Port
+   DW[13]="8011"  # KISS Port
+   DW[14]="TRUE" # Enable pat HTTP server
+   DW[15]="disabled" # Disable piano switch autostart
 }
 
 function loadSettings () {
 	 
-   PTTs="GPIO 12!GPIO 23!rig control via pat"
+   PTTs="GPIO 12!GPIO 23!rig control via client"
 	ARDOP_CONFIG="$TMPDIR/ardop.conf"
 	PAT_ARQ_BW_MAXs="200!500!1000!2000"
 
@@ -177,11 +216,12 @@ function timeStamp () {
 
 function killARDOP () {
 	# $1 is the ardop PID
-   if pgrep -f $ARDOP | grep -q $1 2>/dev/null
+	ardopPIDs="$(pgrep -f $ARDOP | xargs)"
+	if [[ -n $ardopPIDs ]]
 	then
-		kill $1 >/dev/null 2>&1
+		kill -9 $ardopPIDS
 		echo -e "\n\nardopc stopped.  Click \"Save Settings...\" button below to restart." >$PIPEDATA
-	else
+	else		
 		echo -e "\n\nardopc was already stopped.  Click \"Save Settings...\" button below to restart." >$PIPEDATA
 	fi
 }
@@ -387,7 +427,8 @@ YAD_PIDs=()
 while true
 do
 	# Kill any running processes and load latest settings
-	killARDOP $ardop_PID
+	#killARDOP $ardop_PID
+	killARDOP
 	[[ $pat_PID == "" ]] || kill $pat_PID >/dev/null 2>&1
    for P in ${YAD_PIDs[@]}
 	do

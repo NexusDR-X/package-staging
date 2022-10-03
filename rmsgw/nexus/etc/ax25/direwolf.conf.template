@@ -9,8 +9,8 @@ ADEVICE _ADEVICE_CAPTURE_ _ADEVICE_PLAY_
 #ADEVICE plughw:1,0
 
 #-----------------------------------------------------------------------------
-ACHANNELS 1
-CHANNEL 0
+ACHANNELS _ACHANNELS_
+CHANNEL _CHANNEL_
 #-----------------------------------------------------------------------------
 #### ARATE Setting - Uncomment ONE ARATE setting below:
 # Fe-Pi with DigiLink
@@ -19,16 +19,10 @@ ARATE _ARATE_
 # Most other sound cards, including SignaLink
 #ARATE 48000
 #-----------------------------------------------------------------------------
-# MODEM Setting - uncomment ONE MODEM setting below:
-# 1200: Direwolf will use the 
+# MODEM Setting: One of 300,1200,2400,9600
 MODEM _MODEM_
-# 9600: Direwolf will use the
-#MODEM 9600
-
 MYCALL _CALL_
-
 PTT _PTT_
-
 TXDELAY 40
 TXTAIL 5
 

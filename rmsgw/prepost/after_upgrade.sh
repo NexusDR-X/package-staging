@@ -25,7 +25,14 @@ fi
 #EOF
 #   cat /tmp/ax25d.conf | sudo tee --append /etc/ax25/ax25d.conf >/dev/null
 #fi
-
+if grep -q "on-watchdog" /lib/systemd/system/ax25.service
+then
+	sudo cp -f /lib/systemd/system/ax25.service.withwatchdog /lib/systemd/system/ax25.service
+else
+	sudo cp -f /lib/systemd/system/ax25.service.nowatchdog /lib/systemd/system/ax25.service
+fi
+sudo systemctl daemon-reload
+sudo systemctl enable ax25.service
 sudo systemctl restart rsyslog
 
 exit 0

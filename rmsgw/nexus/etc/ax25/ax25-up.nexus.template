@@ -1,0 +1,286 @@
+#!/usr/bin/env bash
+
+# ax25-up.nexus for use on Raspbian Bullseye Nexus DR-X Raspberry Pi
+
+# Derived from a script by dranch@trinnet.net
+VERSION="1.0.1"
+
+# This script should be placed in /etc/ax25 as well as the other associated scripts.
+# This ax25-up script can be started automatically when booting via /etc/init.d/ax25
+# or systemd.  This script supports Direwolf and TNC-Pi TNCs.
+#
+# Required for TNC-Pi: http://www.tnc-x.com/params.zip and install them FIRST
+
+#============================
+#  Variables
+#============================
+
+DWUSER=_DWUSER_ # Run direwolf as this user instead of root.
+TNCTYPE=_TNC_
+SPEED=_MODEM_
+BEACON_TEXT='_BEACON_'
+
+case $SPEED in
+	9600)
+		TNC_SPEED=96
+		TNC_TXDELAY=400
+		TNC_TXTAIL=50
+		TNC_PERSIST=160
+		TNC_SLOT=10
+		;;
+	*) # 1200
+		TNC_SPEED=12
+		TNC_TXDELAY=400
+		TNC_TXTAIL=50
+		TNC_PERSIST=64
+		TNC_SLOT=20
+		;;
+esac
+AXINT=ax0
+#AXINTALIAS=vhfdrop
+AXINTALIAS=wl2kgw
+#TXDELAY=400
+#TXTAIL=50
+#TXTAIL=50
+
+TNCPISER="/dev/ttyAMA0"
+TNC_DEV=/dev/serial0
+#Placeholder IP address for ax25 interface if you wish to run IP over AX25
+#AXIPADDR="44.127.0.1/24"
+
+DIREWOLF=$(command -v direwolf)
+MKISS=$(command -v mkiss)
+KISSATTACH=$(command -v kissattach)
+#IP=$(command -v ip)
+KISSPARMS=$(command -v kissparms)
+LISTEN=$(command -v listen)
+NFT=$(command -v nft)
+PITNC_GETPARAMS=$(command -v pitnc_getparams)
+PITNC_SETPARAMS=$(command -v pitnc_setparams)
+MHEARDD=$(command -v mheardd)
+BEACON=$(command -v beacon)
+AX25D=$(command -v ax25d)
+AXIPADDR="44.127.0.1/32"
+
+TZ=/etc/localtime
+export TZ
+
+DIREWOLFCONF=/etc/ax25/direwolf.conf
+
+LOG="/var/log/packet.log"
+touch "$LOG"
+sudo chown $DWUSER "$LOG"
+
+#============================
+#  Functions
+#============================
+
+function Die () {
+	echo -e "${*}" | tee -a $LOG
+	#/etc/ax25/ax25-down
+	exit 1
+}
+
+function Log () {
+	echo -en "${*}" | tee -a $LOG
+}
+
+function showAXSettings {
+   # See 
+   #   Specific timer settings: http://tldp.org/HOWTO/AX25-HOWTO/x235.html#AEN258
+   #   DG vs VC mode: https://www.mail-archive.com/linux-hams@vger.rutgers.edu/msg04477.html
+   #
+   #  The READING and display of kissparms settings is NOT possible with Linux today
+   #
+   Log "Displaying current system kissparms\n"
+   echo "--"
+   echo "--" >> $LOG
+   Log "AX25 protocol mode (0=Norm* 1=Extd)                : `cat /proc/sys/net/ax25/$AXINT/ax25_default_mode`\n"
+   Log "AX25 backoff type (0=Linear 1=Expon*)              : `cat /proc/sys/net/ax25/$AXINT/backoff_type`\n"
+   Log "AX25 connect mode (0=none 1=network 2=all*)        : `cat /proc/sys/net/ax25/$AXINT/connect_mode`\n"
+   Log "AX25 Extd window size (num of unacked packets 32*) : `cat /proc/sys/net/ax25/$AXINT/extended_window_size`\n"
+   Log "AX25 idle timeout (idle session timeout in M 20*)  : `cat /proc/sys/net/ax25/$AXINT/idle_timeout`\n"
+   Log "AX25 AXIP mode (0=Datagram* 1=VirtConnection)      : `cat /proc/sys/net/ax25/$AXINT/ip_default_mode`\n"
+   Log "AX25 max packet size (256*)                        : `cat /proc/sys/net/ax25/$AXINT/maximum_packet_length`\n"
+   Log "AX25 max packet retry count (10*)                  : `cat /proc/sys/net/ax25/$AXINT/maximum_retry_count`\n"
+   Log "AX25 protcol version (DAMA Slave)                  : `cat /proc/sys/net/ax25/$AXINT/protocol`\n"
+   Log "AX25 STD window size (num of unacked packets 2* )  : `cat /proc/sys/net/ax25/$AXINT/standard_window_size`\n"
+   Log "AX25 T1 timer (unacked packet retry 10000mS*)      : `cat /proc/sys/net/ax25/$AXINT/t1_timeout`\n"
+   Log "AX25 T2 timer (wait for 2nd RX packet 3000mS*)     : `cat /proc/sys/net/ax25/$AXINT/t2_timeout`\n"
+   Log "AX25 T3 timer (link still up check 300000mS*)      : `cat /proc/sys/net/ax25/$AXINT/t3_timeout`\n"
+}
+
+#============================
+#  Main Program
+#============================
+
+[[ -n $LISTEN ]] || Die "listen binary not found. Aborting."
+[[ -n $MHEARDD ]] || Die "mheardd binary not found. Aborting."
+[[ -n $AX25D ]] || Die "ax25d binary not found. Aborting."
+[[ -n $MKISS ]] || Die "mkiss binary not found. Aborting."
+[[ -n $KISSATTACH ]] || Die "kissattach binary not found. Aborting."
+[[ -n $KISSPARMS ]] || Die "kissparms binary not found. Aborting."
+
+Log "\n-----------------------\n$(basename $0) $VERSION starting up\n"
+Log "$(date)\n"
+
+Log "TNC Type: ${TNCTYPE,,}\n"
+case ${TNCTYPE,,} in
+	tncpi)
+		[[ -n $PITNC_GETPARAMS ]] | Die "pitnc_getparams required but not found"
+		[[ -n $PITNC_SETPARAMS ]] | Die "pitnc_setparams required but not found"
+		Log "Configuring TNC-Pi parameters\n"
+		# Check for a TX Delay of 25
+		#   09/27/13 - 15 might not be enough for the THF6A
+		#
+		if [ "`$PITNC_GETPARAMS 1 0 | grep TXDelay | awk '{print $8}'`" -ne "25" ]
+		then
+			#value 1 - I2C Bus,  #2 is I2C device,  #3 is parameter id,  #4 is parameter value
+			Log "[TX Delay] "
+			$PITNC_SETPARAMS 1 0 1 25 > /dev/null || Die "pitnc_setparams failed. Aborting."
+			[ "`$PITNC_GETPARAMS 1 0 | grep TXDelay | awk '{print $8}'`" -ne "25" ] && Die "\nERROR: TNC-Pi not accepting new TX Delay value. Aborting."
+		fi
+		# Check for a Persistance of 64
+		if [ "`$PITNC_GETPARAMS 1 0 | grep Persistance | awk '{print $3}'`" -ne "64" ]
+		then
+			Log "[Persistance] "
+			$PITNC_SETPARAMS 1 0 2 64 > /dev/null || Die "pitnc_setparams failed. Aborting."
+			[ "`$PITNC_GETPARAMS 1 0 | grep Persistance | awk '{print $3}'`" -ne "64" ] && Die "\nERROR: TNC-Pi not accepting new Persistance value"
+		fi
+		# Check for a Slot time of 100
+		if [ "`$PITNC_GETPARAMS 1 0 | grep Slottime | awk '{print $6}'`" -ne "10" ]
+		then
+			Log "[Slottime] "
+			$PITNC_SETPARAMS 1 0 3 10 > /dev/null || Die "pitnc_setparams failed. Aborting."
+			[ "`$PITNC_GETPARAMS 1 0 | grep Slottime | awk '{print $6}'`" -ne "10" ] && Die "\nERROR: TNC-Pi not accepting new Slot Time value"
+		fi
+		# Check for a TX Tail of 0
+		if [ "`$PITNC_GETPARAMS 1 0 | grep TXTail | awk '{print $3}'`" -ne "0" ]
+		then
+			Log "[TXTail]"
+			$PITNC_SETPARAMS 1 0 4 0 > /dev/null || Die "pitnc_setparams failed. Aborting."
+			[ "`$PITNC_GETPARAMS 1 0 | grep TXTail | awk '{print $3}'`" -ne "0" ] && Die "\nERROR: TNC-Pi not accepting new TXTail value"
+		fi
+		Log "Installing one KISS connection on serial port: $TNCPISER\n"
+		# TNC-Pi only runs at 19200 bps
+		$MKISS -s 19200 -x 1 $TNCPISER > /tmp/unix98 || Die "mkiss failed. Aborting."
+		export PTS0=`more /tmp/unix98 | grep -w /dev | cut -b -11`
+		;;
+		
+	direwolf)
+      Log "Starting direwolf\n"
+      rm -f /tmp/kisstnc
+      sudo su - $DWUSER -c "$DIREWOLF -t 0 -c $DIREWOLFCONF -p -T '%Y%m%dT%H:%M:%S' >> $LOG 2>&1 &"
+      DIREWOLF_PID=$(pgrep -f $DIREWOLF)
+      [[ -n $DIREWOLF_PID ]] && echo $DIREWOLF_PID >/var/run/direwolf.pid || Die "Direwolf failed to start"
+      COUNTER=0
+		MAXWAIT=50
+		while [ $COUNTER -lt $MAXWAIT ]
+		do
+		  # Allocate a PTY to ax25
+		  [ -L /tmp/kisstnc ] && break
+		  sleep 0.1
+		  let COUNTER=COUNTER+1
+		done
+		if [ $COUNTER -ge $MAXWAIT ]
+		then
+			kill -SIGTERM $DIREWOLF_PID
+	      rm -f /tmp/kisstnc
+			Die "\nERROR: Direwolf did not allocate a PTY and is not running. Review $LOG"
+		fi
+		Log "Installing one KISS connection on PTY port /tmp/kisstnc\n"
+		if (grep -A1 "^ACHANNELS 2" $DIREWOLFCONF | grep -q "^CHANNEL 1")
+		then
+			# Using the right channel of a stereo sound card, so set channel (port) 0
+			# to 'none' and allocate a PTY for the right channel (port) 1
+	   	sudo su - $DWUSER -c "$MKISS -s 19200 /tmp/kisstnc none /dev/ptmx > /tmp/unix98" || Die "mkiss failed. Aborting."
+		else
+	   	sudo su - $DWUSER -c "$MKISS -s 19200 -x 1 /tmp/kisstnc > /tmp/unix98" || Die "mkiss failed. Aborting."
+		fi
+	   #This creates a PTS interface like "/dev/pts/3"
+   	export PTS0=`more /tmp/unix98 | grep -w /dev | cut -b -11`
+		#export PTS0=$(readlink -f /tmp/kisstnc)
+		;;
+	*)
+		Die "TNC type ${TNCTYPE} not found. Aborting."
+		;;
+esac
+Log "Attaching KISS interface $PTS0 to AX.25 kernel interface $AXINTALIAS\n"
+#$KISSATTACH $PTS0 $AXINTALIAS ${AXIPADDR%/*} 2>&1 >> $LOG || Die "kissattach $KISSATTACH $PTS0 $AXINTALIAS ${AXIPADDR%/*} failed. Aborting."
+rm -f /tmp/ax25-config.tmp
+$KISSATTACH $PTS0 $AXINTALIAS ${AXIPADDR%/*} 2>&1 | tee -a $LOG /tmp/ax25-config.tmp
+[ ${PIPESTATUS[0]} -eq 0 ] || Die "kissattach $KISSATTACH $PTS0 $AXINTALIAS ${AXIPADDR%/*} failed. Aborting."
+awk '/device/ { print $7 }' /tmp/ax25-config.tmp > /tmp/ax25-config1-tmp
+read DEVICE < /tmp/ax25-config1-tmp
+ifconfig $DEVICE netmask 255.255.255.255
+ifconfig $DEVICE broadcast 0.0.0.0
+
+
+# All TNC types:
+#   - keyup and down times need to be in terms of ms and not tens of ms
+#   - Direwolf traps the changes here but the kissparm command itself is silent
+#
+Log "Setting advanced Linux AX25 stack settings\n"
+#
+#Good on Alinco DJ-580 with Rpi to GPIO and simple keying circuit
+# Man pages say 10ms units, Direwolf and listening says they are 1ms units
+#  Half duplex, TXDELAY of 400ms, SLOTTIME of 100ms, PERSIST of 63 (out of 256), TXtail of 50ms
+$KISSPARMS -c 1 -p $AXINTALIAS -f n -t $TNC_TXDELAY -s 100 -r 63 -l $TNC_TXTAIL || Die "kissparms failed. Aborting."
+
+showAXSettings || Die "Unable to retrieve AX25 settings. Aborting."
+
+Log "\nlisten started and logging to /var/log/ax25-listen.log\n"
+$LISTEN -8ar >> /var/log/ax25-listen-`date +%m%d%y`.log 2>&1 &
+LISTEN_PID=$(pgrep -f $LISTEN)
+[[ -n $LISTEN_PID ]] && echo $LISTEN_PID > /var/run/listen.pid || Die "listen failed. Aborting."
+
+cd /etc/ax25
+
+ifconfig ax0 >/dev/null 2>&1 || Die "ax0 interface is not up. Aborting."
+
+## Enable External Logons
+# Try MAX_ATTEMPTS times to start ax25d
+ATTEMPTS=0
+MAX_ATTEMPTS=8
+while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]
+do
+	$AX25D >> $LOG 2>&1 &
+	AX25D_PID=$(pgrep -f $AX25D)
+	[[ -n $AX25D_PID ]] && break
+	let ATTEMPTS=ATTEMPTS+1
+	sleep 0.5
+done
+[ $ATTEMPTS -ge $MAX_ATTEMPTS ] && Die "ax25d did not start. Aborting."
+echo $AX25D_PID > /var/run/ax25d.pid 
+Log "\nax25d started in $ATTEMPTS attempts.\n"
+
+# Start Mheard daemon
+$MHEARDD
+MHEARDD_PID=$(pgrep -f $MHEARDD)
+if [[ -n $MHEARDD_PID ]]
+then
+	echo $MHEARDD_PID > /var/run/mheard.pid
+	Log "\nmheardd Started\n"
+else
+	Log "\nWARNING: mheardd did not start.\n"
+fi
+
+# Start beacon
+if [[ -n $BEACON ]] && [[ $BEACON_TEXT != "" ]]
+then
+   $BEACON -d 'beacon' $AXINTALIAS "$BEACON_TEXT"
+   BEACON_PID=$(pgrep -f $BEACON)
+   if [[ -n $BEACON_PID ]]
+   then
+   	echo $BEACON_PID > /var/run/beacon.pid
+   	Log "\nbeacon started\n"
+   else
+   	Log "WARNING: beacon did not start!\n"
+	fi
+fi
+
+Log "\n$(basename $0) $VERSION completed\n-----------------------\n\n"
+
+
+
+

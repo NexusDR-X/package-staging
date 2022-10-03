@@ -19,7 +19,7 @@
 #%
 #================================================================
 #- IMPLEMENTATION
-#-    version         ${SCRIPT_NAME} 1.1.0
+#-    version         ${SCRIPT_NAME} 1.2.0
 #-    author          Steve Magnuson, AG7GN
 #-    license         CC-BY-SA Creative Commons License
 #-    script_id       0
@@ -160,7 +160,7 @@ function LoadSettings() {
    	echo "Configuration file $RMSGW_CONFIG_FILE found." >$PIPEDATA
 	else # Set some default values in a new config file
    	echo "Configuration file $RMSGW_CONFIG_FILE not found.  Creating a new one with default values."  >$PIPEDATA
-		echo "declare -A F" > "$RMSGW_CONFIG_FILE"
+		echo "declare -gA F" > "$RMSGW_CONFIG_FILE"
 		echo "F[_CALL_]='N0CALL'" >> "$RMSGW_CONFIG_FILE"
    	echo "F[_SSID_]='10'" >> "$RMSGW_CONFIG_FILE"
    	echo "F[_PASSWORD_]='password'" >> "$RMSGW_CONFIG_FILE"
@@ -184,13 +184,22 @@ function LoadSettings() {
    	echo "F[_MODEM_]='1200'" >> "$RMSGW_CONFIG_FILE"
    	echo "F[_ADEVICE_CAPTURE_]='null'" >> "$RMSGW_CONFIG_FILE"
    	echo "F[_ADEVICE_PLAY_]='null'" >> "$RMSGW_CONFIG_FILE"
-   	echo "F[_ARATE_]='96000'" >> "$RMSGW_CONFIG_FILE"
-   	echo "F[_PTT_]='GPIO 23'" >> "$RMSGW_CONFIG_FILE"
+   	echo "F[_ACHANNELS_]='1'" >> "$RMSGW_CONFIG_FILE"
+   	echo "F[_CHANNEL_]='0'" >> "$RMSGW_CONFIG_FILE"
+    	echo "F[_ARATE_]='96000'" >> "$RMSGW_CONFIG_FILE"
+	  	echo "F[_PTT_]='GPIO 23'" >> "$RMSGW_CONFIG_FILE"
    	echo "F[_DWUSER_]='$(whoami)'" >> "$RMSGW_CONFIG_FILE"
   		echo "F[_BANNER_]='*** My Banner ***'" >> "$RMSGW_CONFIG_FILE"
    	echo "F[_REPORTS_]='FALSE'" >> "$RMSGW_CONFIG_FILE"
    	echo "F[_ADDL_EMAIL_]=''" >> "$RMSGW_CONFIG_FILE"
+   	if grep -q "on-watchdog" /lib/systemd/system/ax25.service 2>/dev/null
+   	then
+   		echo "F[_AUTORESTART_]='TRUE'" >> "$RMSGW_CONFIG_FILE"
+   	else
+   		echo "F[_AUTORESTART_]='FALSE'" >> "$RMSGW_CONFIG_FILE"
+		fi
 	fi
+	source "$RMSGW_CONFIG_FILE"
 }
 
 function SetFormFields () {
@@ -219,6 +228,12 @@ function SetFormFields () {
 	[[ -z $ADEVICE_CAPTUREs ]] && ADEVICE_CAPTUREs="null"
 	[[ $ADEVICE_PLAYBACKs =~ ${F[_ADEVICE_PLAY_]} ]] && ADEVICE_PLAYBACKs="$(echo "$ADEVICE_PLAYBACKs" | sed "s/${F[_ADEVICE_PLAY_]}/\^${F[_ADEVICE_PLAY_]}/")"
 	[[ -z $ADEVICE_PLAYBACKs ]] && ADEVICE_PLAYBACKs="null"
+
+	ACHANNELSs="1~2"
+	[[ $ACHANNELSs =~ ${F[_ACHANNELS_]} ]] && ACHANNELSs="$(echo "$ACHANNELSs" | sed "s/${F[_ACHANNELS_]}/\^${F[_ACHANNELS_]}/")"
+
+	CHANNELs="0~1"
+	[[ $CHANNELs =~ ${F[_CHANNEL_]} ]] && CHANNELs="$(echo "$CHANNELs" | sed "s/${F[_CHANNEL_]}/\^${F[_CHANNEL_]}/")"
 
 	ARATEs="44100~48000~96000"
 	[[ $ARATEs =~ ${F[_ARATE_]} ]] && ARATEs="$(echo "$ARATEs" | sed "s/${F[_ARATE_]}/\^${F[_ARATE_]}/")" 
@@ -314,8 +329,6 @@ function UpdateReporting () {
 
 function WriteConfiguration () {
 
-	source "$RMSGW_CONFIG_FILE"
-
 	# Do some minimal error checking
 	if [[ ${F[_CALL_]} =~ ^N0(CALL|ONE)$ || \
 			${F[_PASSWORD_]} == "" || \
@@ -406,18 +419,29 @@ function WriteConfiguration () {
 	sudo chmod ugo+r "$FNAME"
 	echo "$FNAME configured." >$PIPEDATA
 
-	FNAME="/etc/ax25/ax25-up.new"
+#	FNAME="/etc/ax25/ax25-up.new"
+#	sed -e "s|_DWUSER_|${F[_DWUSER_]}|" \
+#		-e "s|_TNC_|${F[_TNC_]}|" \
+#		-e "s|_MODEM_|${F[_MODEM_]}|" \
+#		"${FNAME}.template" > "$TEMPF"
+#	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
+#	sudo cp -f "$TEMPF" "$FNAME"
+#	sudo chmod +x "$FNAME"
+#	echo "$FNAME configured." >$PIPEDATA
+#
+#	FNAME="/etc/ax25/ax25-up.new2"
+#	sed -e "s|_BEACON_|${F[_BEACON_]}|" "${FNAME}.template" > "$TEMPF"
+#	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
+#	sudo cp -f "$TEMPF" "$FNAME"
+#	sudo chmod +x "$FNAME"
+#	echo "$FNAME configured." >$PIPEDATA
+
+	FNAME="/etc/ax25/ax25-up.nexus"
 	sed -e "s|_DWUSER_|${F[_DWUSER_]}|" \
 		-e "s|_TNC_|${F[_TNC_]}|" \
 		-e "s|_MODEM_|${F[_MODEM_]}|" \
+		-e "s|_BEACON_|${F[_BEACON_]}|" \
 		"${FNAME}.template" > "$TEMPF"
-	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
-	sudo cp -f "$TEMPF" "$FNAME"
-	sudo chmod +x "$FNAME"
-	echo "$FNAME configured." >$PIPEDATA
-
-	FNAME="/etc/ax25/ax25-up.new2"
-	sed -e "s|_BEACON_|${F[_BEACON_]}|" "${FNAME}.template" > "$TEMPF"
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
 	sudo cp -f "$TEMPF" "$FNAME"
 	sudo chmod +x "$FNAME"
@@ -430,19 +454,50 @@ function WriteConfiguration () {
 		-e "s|_ARATE_|${F[_ARATE_]}|" \
 		-e "s|_ADEVICE_CAPTURE_|${F[_ADEVICE_CAPTURE_]}|" \
 		-e "s|_ADEVICE_PLAY_|${F[_ADEVICE_PLAY_]}|" \
+		-e "s|_ACHANNELS_|${F[_ACHANNELS_]}|" \
+		-e "s|_CHANNEL_|${F[_CHANNEL_]}|" \
 		"${FNAME}.template" > "$TEMPF"
 	[[ $? == 0 ]] || { echo -e "\n**** CONFIGURATION ERROR ****: ERROR updating $FNAME" >$PIPEDATA; return 1; }
 	sudo cp -f "$TEMPF" "$FNAME"
 	sudo chmod ugo+r "$FNAME"
 	echo "$FNAME configured." >$PIPEDATA
 
-	echo "Setting up symlink for /etc/ax25/ax25-up if needed" >$PIPEDATA
-	if ! [ -L /etc/ax25/ax25-up ]
+	echo "Setting up symlink for /etc/ax25/ax25-up" >$PIPEDATA
+#	if ! [ -L /etc/ax25/ax25-up ]
+#	then # There's no symlink for /etc/ax25/ax25-up
+#   	[ -f /etc/ax25/ax25-up ] && sudo mv /etc/ax25/ax25-up /etc/ax25/ax25-up.previous
+#   	sudo ln -s /etc/ax25/ax25-up.new /etc/ax25/ax25-up
+#	fi
+	if ! [[ -L /etc/ax25/ax25-up ]]
 	then # There's no symlink for /etc/ax25/ax25-up
    	[ -f /etc/ax25/ax25-up ] && sudo mv /etc/ax25/ax25-up /etc/ax25/ax25-up.previous
-   	sudo ln -s /etc/ax25/ax25-up.new /etc/ax25/ax25-up
 	fi
+	sudo ln -s /etc/ax25/ax25-up.nexus /etc/ax25/ax25-up
 	echo "Done." >$PIPEDATA
+	
+
+	if grep -q "on-watchdog" /lib/systemd/system/ax25.service
+	then
+		sudo cp -f /lib/systemd/system/ax25.service.watchdog /lib/systemd/system/ax25.service
+	else
+		sudo cp -f /lib/systemd/system/ax25.service.nowatchdog /lib/systemd/system/ax25.service
+	fi
+
+	if [[ ${F[_AUTORESTART_]} == TRUE ]] && ! grep -q "on-watchdog" /lib/systemd/system/ax25.service
+	then
+		echo "Enabling AX25 autorestart workaround..." >$PIPEDATA
+		sudo cp -f /lib/systemd/system/ax25.service.withwatchdog /lib/systemd/system/ax25.service
+		sudo systemctl daemon-reload
+		echo "Done." >$PIPEDATA
+	elif [[ ${F[_AUTORESTART_]} == FALSE ]] && grep -q "on-watchdog" /lib/systemd/system/ax25.service
+	then
+		echo "Disabling AX25 autorestart workaround..." >$PIPEDATA
+		sudo cp -f /lib/systemd/system/ax25.service.nowatchdog /lib/systemd/system/ax25.service
+		sudo systemctl daemon-reload
+		echo "Done." >$PIPEDATA
+	else
+		echo "No AX25 autorestart change requested" >$PIPEDATA
+	fi
 	return 0
 
 }
@@ -472,12 +527,15 @@ function SaveSettings () {
 	F[_MODEM_]="${TF[20]}"
 	F[_ADEVICE_CAPTURE_]="${TF[21]}"
 	F[_ADEVICE_PLAY_]="${TF[22]}"
-	F[_ARATE_]="${TF[23]}"
-	F[_PTT_]="${TF[24]}"
-	F[_DWUSER_]="${TF[25]}"
-	F[_BANNER_]="$(echo "${TF[26]}" | sed "s/'//g")" # Strip out single quotes
-	F[_REPORTS_]="${TF[27]}"
-	F[_ADDL_EMAIL_]="${TF[28]}"
+	F[_ACHANNELS_]="${TF[23]}"
+	F[_CHANNEL_]="${TF[24]}"
+	F[_ARATE_]="${TF[25]}"
+	F[_PTT_]="${TF[26]}"
+	F[_DWUSER_]="${TF[27]}"
+	F[_BANNER_]="$(echo "${TF[28]}" | sed "s/'//g")" # Strip out single quotes
+	F[_REPORTS_]="${TF[29]}"
+	F[_ADDL_EMAIL_]="${TF[30]}"
+	F[_AUTORESTART_]="${TF[31]}"
 
 	# Do some minimal error checking
 	if [[ ${F[_CALL_]} =~ ^N0(CALL|ONE)$ || \
@@ -490,18 +548,25 @@ function SaveSettings () {
 	fi
 
 	UpdateReporting
-
+	# fepi-capture|playback-left|right are already mono, so force mono and left channel
+	if [[ ${F[_ADEVICE_CAPTURE_]} =~ fepi ]]
+	then
+		F[_ACHANNELS_]='1'
+		F[_CHANNEL_]='0'
+	fi
+	
 	# Update the configuration file
-	echo "declare -A F" > "$RMSGW_CONFIG_FILE"
+	echo "declare -gA F" > "$RMSGW_CONFIG_FILE"
 	for I in "${!F[@]}"
 	do
 		echo "F[$I]='${F[$I]}'" >> "$RMSGW_CONFIG_FILE"
 	done
+	source "$RMSGW_CONFIG_FILE"
 
 	WriteConfiguration
 
 	# Set permissions
-	sudo chown -R rmsgw:rmsgw /etc/rmsgw/*
+	#sudo chown -R rmsgw:rmsgw /etc/rmsgw/*
 	return 0
 }
 
@@ -514,11 +579,25 @@ function ConfigureRMSGateway () {
 	do
 		# Retrieve saved settings or defaults if there are no saved settings
 		LoadSettings
-		source "$RMSGW_CONFIG_FILE"
 		if ! [[ -n "${F[_REPORTS_]}" ]]
 		then # Older versions of config file didn't have REPORTS. Add if necessary.
 			F[_REPORTS_]='FALSE'
 			echo "F[_REPORTS_]='FALSE'" >> "$RMSGW_CONFIG_FILE"
+		fi
+		if ! [[ -n "${F[_AUTORESTART_]}" ]]
+		then # Older versions of config file didn't have AUTORESTART. Add if necessary.
+			F[_AUTORESTART_]='FALSE'
+			echo "F[_AUTORESTART_]='FALSE'" >> "$RMSGW_CONFIG_FILE"
+		fi
+		if ! [[ -n "${F[_ACHANNELS_]}" ]]
+		then # Older versions of config file didn't have ACHANNELS. Add if necessary.
+			F[_ACHANNELS_]=1
+			echo "F[_ACHANNELS_]='1'" >> "$RMSGW_CONFIG_FILE"
+		fi
+		if ! [[ -n "${F[_CHANNEL_]}" ]]
+		then # Older versions of config file didn't have CHANNEL. Add if necessary.
+			F[_CHANNEL_]=0
+			echo "F[_CHANNEL_]='0'" >> "$RMSGW_CONFIG_FILE"
 		fi
 		SetFormFields
 	
@@ -558,13 +637,16 @@ function ConfigureRMSGateway () {
   			--field="TNC Type":CB 
   			--field="MODEM":CB 
   			--field="Direwolf Capture ADEVICE":CB 
-  			--field="Direwolf Playback ADEVICE":CB 
+  			--field="Direwolf Playback ADEVICE":CB
+  			--field="Direwolf <b>ACHANNELS</b>: <b>1</b> for fepi\nor Mono ADEVICE; <b>2</b> for Stereo":CB
+  			--field="Direwolf <b>CHANNEL</b>: <b>0</b> for fepi or\n stereo left; <b>1</b> for stereo right":CB  
   			--field="Direwolf ARATE":CB 
   			--field="Direwolf PTT":CBE 
   			--field="Direwolf User" 
   			--field="Banner Text (keep it short!)" 
   			--field="Send daily activity reports to Sysop email address":CHK 
   			--field="Add'l Activity Report Email(s)\n(Use comma to separate emails)"
+  			--field="Enable autorestart watchdog for AX25 bug":CHK
 			--button="<b>Close</b>":1 \
 			--button="<b>Save</b>":0 \
 			--
@@ -591,12 +673,15 @@ function ConfigureRMSGateway () {
 			"$MODEMs"
 			"$ADEVICE_CAPTUREs"
 			"$ADEVICE_PLAYBACKs"
+			"$ACHANNELSs"
+			"$CHANNELs"
 			"$ARATEs"
 			"$PTTs"
 			"${F[_DWUSER_]}"
 			"${F[_BANNER_]}"
 			"${F[_REPORTS_]}"
 			"${F[_ADDL_EMAIL_]}"
+			"${F[_AUTORESTART_]}"
 		)
 		"${CMD[@]}" > $RMSGW_TEMP_CONFIG
 		
@@ -605,41 +690,10 @@ function ConfigureRMSGateway () {
 				[[ -s $RMSGW_TEMP_CONFIG ]] || Die "Unexpected input from configuration tab"
 				if SaveSettings
 				then # Configuration looks OK
-					if ! systemctl list-unit-files | grep enabled | grep -q ax25
-					then # No ax25 service exists. Create it.
-	   				echo "Creating ax25 service..." >$PIPEDATA
-				   	cat > "$TMP_AX25_SERVICE" << EOF
-[Unit]
-Description=AX.25 interface
-After=network.target
-
-[Service]
-ExecStartPre=/bin/sleep 10
-#EnvironmentFile=/etc/ax25
-Type=forking
-Restart=no
-TimeoutSec=0
-IgnoreSIGPIPE=no
-KillMode=process
-GuessMainPID=no
-RemainAfterExit=yes
-#SysVStartPriority=12
-ExecStart=/etc/ax25/ax25-up
-ExecStop=/etc/ax25/ax25-down
-
-[Install]
-WantedBy=default.target
-EOF
-	   				sudo cp -f "$TMP_AX25_SERVICE" /lib/systemd/system/ax25.service
-	   				rm -f "$TMP_AX25_SERVICE"
-	   				sudo systemctl enable ax25 >$PIPEDATA
-	   				echo "Done." >$PIPEDATA
-	   				echo -e "\n\nClick '[Re]start' to start the RMS Gateway" >$PIPEDATA
-					fi
-
 					# Add Auto-Check-in script to cron
-					#    Generate 2 numbers between 1 and 59, M minutes apart to use for the cron job
-					echo "Updating crontab for user rmsgw to run Winlink Auto Check-in" >$PIPEDATA
+					#    Generate 2 numbers between 1 and 59, M minutes apart to 
+					#    use for the cron job
+					echo "Updating crontab for user rmsgw to run Winlink Auto Check-in..." >$PIPEDATA
 					M=30
 					N1=$(( $RANDOM % 59 + 1 ))
 					N2=$(( $N1 + $M ))
@@ -693,7 +747,6 @@ TITLE="$APP_NAME $VERSION"
 #RMSGW_CONFIG_FILE="$HOME/rmsgw.conf"
 mkdir -p "$HOME/.config/nexus"
 RMSGW_CONFIG_FILE="$HOME/.config/nexus/rmsgw.conf"
-[[ -f "$HOME/rmsgw.conf" ]] && mv "$HOME/rmsgw.conf" "$RMSGW_CONFIG_FILE" 
 LOGFILES="/var/log/rms.debug /var/log/ax25-listen.log /var/log/packet.log"
 TEXT="<b><big><span color='blue'>RMS Gateway Manager</span></big></b>\nFollowing $LOGFILES"
 
@@ -817,11 +870,19 @@ $SYNTAX && set -n
 # Run in debug mode, if set
 $DEBUG && set -x 
 
+# Update older configuration files as necessary
+#   Move configuration file to ~/.config/nexus
+[[ -f "$HOME/rmsgw.conf" ]] && mv "$HOME/rmsgw.conf" "$RMSGW_CONFIG_FILE" 
+#   Make configuration file array global
+[[ -s $RMSGW_CONFIG_FILE ]] && sed -i -e 's/^declare -A/declare -gA/1' $RMSGW_CONFIG_FILE
+
+systemctl is-active --quiet ax25 && echo -e "\nax25.service is ACTIVE\n" >>/var/log/packet.log || \
+echo -e "\nax25.service is NOT active\n" >>/var/log/packet.log
+
 PIDs=()
 # Uncomment the following 2 lines to purge yad text-info periodically.
 #clearTextInfo 120m &
 #PIDs=( $! )
-
 # Start the log file monitor
 yad --title="$TITLE" --text-align="center" --window-icon=logviewer \
 	--text="$TEXT" --back=black --fore=yellow --text-info \
