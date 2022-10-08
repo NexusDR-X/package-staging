@@ -25,25 +25,23 @@ Use one of these methods:
 
 There's a bug somewhere (PulseAudio?) that introduces a delay of about 1 second after PTT is activated before any audio is transmitted. The workaround is to configure Direwolf to use the Fe-Pi sound card directly (via ALSA), and not the PulseAudio virtual ALSA sound interfaces of `fepi-capture-left|right` and `fepi-playback-left|right`. To change from using the FePi virtual ALSA interfaces of `fepi-capture-left|right` and `fepi-playback-left|right`, follow these instructions *in this order*:
 
-1. Right-click on any whitespace on the Pi's desktop title bar, then select __Add / Remove Panel Items__ from the menu.
+1. Stop the ax25 service using either the __RMS Gateway Manager__ or the command line:
 
-1. Scroll down the list until you locate __Microphone Control (PulseAudio)__. Select it, then click __Remove__. 
-
-1. Repeat the previous step for __Volume Control (PulseAudio)__. The speaker and microphone icons should now be gone from the task bar.
-
-1. Open a Terminal and enter the following to stop the __ax25__ service:
-
-		sudo systemctl stop ax25.service
-
-1. In that same Terminal, type the following lines to disable the PulseAudio service:
+		sudo systemctl stop ax25
+		
+1. Open a Terminal, type the following lines to disable the PulseAudio service:
 
 		systemctl --user stop pulseaudio.socket
 		systemctl --user stop pulseaudio.service
-		
-	and also prevent them from autostarting at bootup:
+			
+	and remove the pulseaudio configuration that uses the Fe-Pi:
+	
+		sudo mv /etc/asound.conf /etc/asound.conf.disabled
+		mv ~/.config/pulse/default.pa ~/.config/pulse/default.pa.disabled
 
-		systemctl --user mask pulseaudio.socket
-		systemctl --user mask pulseaudio.service
+	and restart pulseaudio:
+	
+		systemctl --user start pulseaudio
 		
 1. Start the __RMS Gateway Manager__ app from the __Hamradio__ menu. Click __Configure__, then:
 
