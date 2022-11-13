@@ -23,7 +23,7 @@ Use one of these methods:
 
 ### CRITICAL: Kernel bug prevents consecutive AX25 connections from the same station
 
-A bug introduced in the Linux kernel used in the Raspbian OS after March 31, 2022 prevents consecutive AX25 connections to the same station. [Description and workaround.](https://github.com/NexusDR-X/nexus-bootstrap/wiki/7.-Bugs-and-Annoyances#kernel-bug-prevents-consecutive-ax25-connections)
+A bug introduced in the Linux kernel used in the Raspbian OS after March 31, 2022 causes a station that successfully connects to the RMS Gateway to not be able to connect again to that same gateway. That station's socket connection on the gateway goes into LISTENING mode rather than being removed as it should. As a workaround, the RMS Gateway Manager has a setting that enables a watchdog. This watchdog monitors the RMS Gateway for these leftover LISTENING sockets. If one is detected, the RMS Gateway service will automatically restart. [Description and workaround.](https://github.com/NexusDR-X/nexus-bootstrap/wiki/7.-Bugs-and-Annoyances#kernel-bug-prevents-consecutive-ax25-connections)
 
 ### TX Audio Delay with PulseAudio
 
@@ -63,17 +63,7 @@ There's a bug somewhere (PulseAudio?) that introduces a delay of about 1 second 
 
 1. Reboot and make sure all is working as expected.	
 
-### Lingering AX25 Sockets
-
-There's a bug in Linux kernel for Bullseye that causes a station that successfully connects to the RMS Gateway to not be able to connect again to that same gateway. That station's socket connection on the gateway goes into LISTENING mode rather than being removed as it should. As a workaround, the RMS Gateway Manager has a setting that enables a watchdog. This watchdog monitors the RMS Gateway for these leftover LISTENING sockets. If one is detected, the RMS Gateway service will automatically restart. To enable this feature:
-
-1. Start the __RMS Gateway Manager__ app from the __Hamradio__ menu. Click __Configure__, then:
-
-	- Check the __Enable autorestart watchdog for AX25 bug__ box.
-	- Click __Save__ to close the __Configure__ window and save the settings.
-	- Click __[Re]start__ to restart __AX25__.
-
-1. Reboot and make sure all is working as expected.		
+	
 
 	
 	
