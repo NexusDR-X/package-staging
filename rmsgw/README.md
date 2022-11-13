@@ -21,6 +21,10 @@ Use one of these methods:
 
 ## Bugs and workarounds
 
+### CRITICAL: Kernel bug prevents consecutive AX25 connections from the same station
+
+A bug introduced in the Linux kernel used in the Raspbian OS after March 31, 2022 prevents consecutive AX25 connections to the same station. [Description and workaround.](https://github.com/NexusDR-X/nexus-bootstrap/wiki/7.-Bugs-and-Annoyances#kernel-bug-prevents-consecutive-ax25-connections)
+
 ### TX Audio Delay with PulseAudio
 
 There's a bug somewhere (PulseAudio?) that introduces a delay of about 1 second after PTT is activated before any audio is transmitted. The workaround is to configure Direwolf to use the Fe-Pi sound card directly (via ALSA), and not the PulseAudio virtual ALSA sound interfaces of `fepi-capture-left|right` and `fepi-playback-left|right`. To change from using the FePi virtual ALSA interfaces of `fepi-capture-left|right` and `fepi-playback-left|right`, follow these instructions *in this order*:
