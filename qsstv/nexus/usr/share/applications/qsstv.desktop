@@ -3,7 +3,7 @@ Name=QSSTV
 Encoding=UTF-8
 GenericName=QSSTV
 Comment=Slow Scan TV
-Exec=sh -c "PULSE_SINK=fepi-playback PULSE_SOURCE=fepi-capture /usr/bin/qsstv"
+Exec=sh -c "/usr/bin/qsstv"
 Icon=/usr/share/pixmaps/CQ.png
 Terminal=false
 Type=Application
