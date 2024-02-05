@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# NOTE: As of Fldigi version 4.2.04, this script is no longer needed or used by Fldigi.
+#       GPIO PTT activation was fixed in 4.2.04 and GPIO PTT is now handled by Fldigi
+#       itself.
+#
 # Alias for old gpio binary for use with 
 # fldigi GPIO PTT under RaspiOS Bullseye.
 # gpio was from the wiringpi package, which
